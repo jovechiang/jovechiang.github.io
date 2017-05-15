@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Lock Free Data Structure I</title>
+  <meta name="description" content="####Introduction In my current work, there are many heavy work needs CP and IO operation. In order to acheive a high throughput, we adapt Producer and Consum...">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/algorithm/2013/10/15/LFREE.html">
+  <link rel="alternate" type="application/rss+xml" title="Random Thoughts" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Random Thoughts</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Lock Free Data Structure I</h1>
+    <p class="post-meta">
+      <time datetime="2013-10-15T00:00:00-07:00" itemprop="datePublished">
+        
+        Oct 15, 2013
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>####Introduction
+In my current work, there are many heavy work needs CP and IO operation. In order to acheive a high throughput, we adapt Producer and Consumer pattern. But to maintain the state is really harmful for system performance. So I did some research and try to avoid that. This post will introduce some lock free data structure and lock free queue can be used for Producer/Consumer pattern. And in my project, that actually improve QPS <em>10x</em>!!! Awesome!!!</p>
+
+<h4 id="compare_and_swap">Compare_And_Swap</h4>
+<p>Wiki:  <br />
+Compare_And_Swap (CAS) is an atomic instruction used in multithreading to achieve synchronization.It compares the contents of a memory location to a given value and, only if they are the same, modifies the contents of that memory location to a given new value. This is done as a single atomic operation. The atomicity guarantees that the new value is calculated based on up-to-date information; if the value had been updated by another thread in the meantime, the write would fail. The result of the operation must indicate whether it performed the substitution; this can be done either with a simple Boolean response (this variant is often called compare-and-set), or by returning the value read from the memory location (not the value written to it).</p>
+
+<p>CAS is supported directly from CPU level, which means it ensure the atomicity. We can describe the behavior of CAS by following function:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">compare_and_swap</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">reg</span><span class="p">,</span> <span class="kt">int</span> <span class="n">oldval</span><span class="p">,</span> <span class="kt">int</span> <span class="n">newval</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">ATOMIC</span><span class="p">();</span>
+	<span class="kt">int</span> <span class="n">old_reg_val</span> <span class="o">=</span> <span class="o">*</span><span class="n">reg</span><span class="p">;</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">old_reg_val</span> <span class="o">==</span> <span class="n">oldval</span><span class="p">)</span>
+		<span class="o">*</span><span class="n">reg</span> <span class="o">=</span> <span class="n">newval</span><span class="p">;</span>
+	<span class="n">END_ATOMIC</span><span class="p">();</span>
+	<span class="k">return</span> <span class="n">old_reg_val</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>CAS is not only used for implementing synchronization primitives like semaphores and mutexes but also used for more sophisticated <em>lock-free and wait-free algorithms</em>.</p>
+
+<p>By using CAS syntax in <em>C++ 11</em> (compare_exchange_weak), we can define a non blocking counter:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="k">class</span> <span class="nc">nonblocking_counter</span><span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="o">&gt;</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="c1">// increment the count
+</span>    <span class="kt">unsigned</span> <span class="n">increment</span><span class="p">(){</span>
+      <span class="k">do</span><span class="p">{</span>
+        <span class="c1">// get old value and calculate new value for counter
+</span>        <span class="kt">unsigned</span> <span class="n">old_count</span> <span class="o">=</span> <span class="n">count</span><span class="p">.</span><span class="n">load</span><span class="p">();</span>
+        <span class="kt">unsigned</span> <span class="n">new_count</span> <span class="o">=</span> <span class="n">old_count</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+        <span class="c1">// Atomically increment the counter.
+</span>        <span class="n">boolean</span> <span class="n">success</span> <span class="o">=</span> <span class="n">count</span><span class="p">.</span><span class="n">compare_exchange_weak</span><span class="p">(</span><span class="n">old_count</span><span class="p">,</span> <span class="n">new_count</span><span class="p">);</span>
+        <span class="c1">// someone else changed the counter first -- start over.
+</span>      <span class="p">}</span><span class="k">while</span><span class="p">(</span><span class="o">!</span><span class="n">success</span><span class="p">);</span>
+      <span class="k">return</span> <span class="n">old_count</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">// get the current count
+</span>    <span class="kt">unsigned</span> <span class="n">get</span><span class="p">(){</span>
+        <span class="k">return</span> <span class="n">count</span><span class="p">.</span><span class="n">load</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span></code></pre></figure>
+
+<h4 id="aba-problem">ABA problem</h4>
+<p>Before we start implement this, first I want to introduce a famous problem <em>ABA</em> in CAS :It’s possible that between the time the old value is read and the time CAS is attempted, some other processors or threads change the memory location two or more times such that it acquires a bit pattern which matches the old value. The problem arises if this new bit pattern, which looks exactly like the old value, has a different meaning: for instance, it could be a recycled address, or a wrapped version counter.</p>
+
+<p>A general solution to this is to use a double-length CAS (e.g on a 32 bit system, a 64 bit CAS). The second half is used to hold a counter. The compare part of the operation compares the previously read value of the pointer <em>and</em> the counter, to the current pointer and counter. If they match, the swap occurs(the new value is written) but the new value has an incremented counter. This means that if <em>ABA</em> has occurred, although the pointer value will be the same, the counter is exceedingly unlikedly to be the same.</p>
+
+<p>####Reference
+Maurice Herlihy (1991)
+Wikipedia</p>
+
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Random Thoughts</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Random Thoughts
+            
+            </li>
+            
+            <li><a href="mailto:jovechiang@gmail.com">jovechiang@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+          <li>
+            <a href="https://twitter.com/JoveChiang"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">JoveChiang</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>Personal Blog about Technology and Business
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

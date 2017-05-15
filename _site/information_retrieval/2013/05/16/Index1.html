@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Indexing</title>
+  <meta name="description" content="#####In this post, I’m gonna introduce some basic algorithm of web doc indexing.">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/information_retrieval/2013/05/16/Index1.html">
+  <link rel="alternate" type="application/rss+xml" title="Random Thoughts" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Random Thoughts</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Indexing</h1>
+    <p class="post-meta">
+      <time datetime="2013-05-16T00:00:00-07:00" itemprop="datePublished">
+        
+        May 16, 2013
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>#####In this post, I’m gonna introduce some basic algorithm of web doc indexing.</p>
+
+<p>####Blocked sort-based indexing</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>BSBIndexConstruction()
+n = 0
+while ( all documents have not been processed )
+do n = n+1
+	block = ParseNextBlock()
+	BSBI-Invert(block)
+	WriteBlockToDisk(block, fn)
+MergeBlocks(f1,...,fn;f_merged)
+</code></pre>
+</div>
+
+<p>There are 4 steps : (i) segements the collection into parts of equal size, (ii) sorts the termID-docID pairs of each part in memory, (iii) stores intermediate sorted resultes on disk, and (iv) merges all intermediate results into final index.</p>
+
+<p>The algorithm parses documents into termID-docID pairs and accumulates the pairs in memory until a block of a fixed size is full (ParseNextBlock). We choose the block size to fit comfortably into memory to permit a fast in-memory sort. The block is then inverted and written to disk.</p>
+
+<p>Inversion (BSBI-Invert) involves two steps. First, we sort the termID-docID pairs. Next, we collect all termID-docID pairs with the same termID into a postings list, where a posting is simply a docID. The result, and inverted index for the block we have just read, is then written to disk.(WriteBlockToDisk)</p>
+
+<p>In the final step, the algorithm simultaneously merges the ten blocks into one large merged index.(MergeBlocks)</p>
+
+<p>####Single-pass in memory indexing</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>SPIMI-INVERT(token_stream)
+output_file = NEWFILE()
+dictionary = NEWHASH()
+while(free memory available)
+do token = next(token_stream)
+	if term(token) does not exist in dictionary
+		then postings_list = AddToDictionary (dictionary, term(token))
+		else postings_list = GetPostingsList(dictionary, term(token))
+	if full(postings_list)
+		then postings_list = DoublePostingsList(dictionary, term(token))
+	AddToPostingsList(postings_list,docID(token))
+sorted_terms = SortTerms(dictionary)
+WriteBlockToDisk(sorted_terms,dictionary,output_file)
+return output_file
+//need to merge blocks out of this function
+</code></pre>
+</div>
+
+<p>Blocked sort-based indexing has excellent scaling properties, but it needs a data structure for mapping terms to termIDs. For very large collections, this data structure does not fit into memory. A more scalable alternative is single-pass-in-memory indexing or SPIMI. SPIMI uses terms instead of termIDs, writes each block’s dictionary to disk, and then starts a new dictionary for the next block. SPIMI can index collections of any size as long as there is enough disk space available.</p>
+
+<p>SPIMI-INVERT is called repeately on the token stream until the entire collection has been processed. Tokens are processed one by one during each successive call of SPIMI-INVERT. When a term occurs for the first time, it is added to the dictinary (best implemented as a hash), and a new postings list is created.</p>
+
+<p>A differece between BSBI and SPIMI is that SPIMI adds a posting directly to its postings list. Instead of first collecting all termID-docID pairs and then sorting them, each postings list is dynamic and it is immediately available to collect postings. This has two advantages: It is faster because there is no sorting required, and it saves memory because we keep track of the term a postings list belongs to , so the termIDs of postings need not be stored. As a result, the blocks that individual calls of SPIMI-INVERT can process are much larger and the index construction process as a whole is more efficient.</p>
+
+<p>###Distributed indexing</p>
+
+<p>Collections are often so large that we cannot perform index construction efficiently on a single machine. This is particularly true of the WWW for which we need large computer clusters to construct any reasonably sized web index. Web serach engines, therefore, use distributed indexing algorithms for index construction. The result of construction process is a distributed index that is partitioned across several machines either according to term or according to document.</p>
+
+<p><img src="/assets/images/MapReduce.JPG" alt="MapReduce" title="distributed indexing" width="100%" /></p>
+
+<p>In general, MapReduce breaks a large computing problem into smaller parts by recasting it in terms of manipulation of key-value pairs. For indexing, a key-value pair has the form (termID, docID). In distributed indexing, the mapping from terms to termIDs is also distributed and therefore more complex than in single-machine indexing. A simple solution is to maintain a (perhaps precomputed) mapping for frequent terms that is copied to all nodes and to use terms directly for infrequent terms. We assume that all nodes share a consistent term to termID mapping.</p>
+
+<p>The map phase of MapReduce consists of mapping splits of the input data to key-value pairs. This is the same parsing task we also encountered in BSBI and SPIMI, and we therefore call the machines that execute the map phase parsers. Each parser writes its output to local intermediate files, the sgement files.</p>
+
+<p>For the reduce phase, we want all values for a given key to be stored close together, so that they can be read and processed quickly. This is achieved by partitioning the keys into j term partitions and having the parsers write key-value pairs for each term paritition into a separate segment file. Collecting all values(docIDs) for a given key (termID) into one list is the task of the inverters in the reduece phase. The master assigns each term partition to a different inverter - and, as in the case of parsers, resigns term partitions in case of failing, or slow inverters. Each term partition is processed by one inverter.</p>
+
+<p>####Dynamic indexing
+So far, we have assumed that the document colleciton is static. This is fine for collections that change infrequently or never. But most collections are modified frequently with documents being added, deleted, and updated. This means that new terms need to be added to the dictinary, and postings lists need to be updated for existing terms.</p>
+
+<p>The simplest way to achieve this is to periodically reconstruct the index from scratch. This is a good solution if the number of changes over time is small and a delay in making new documents searchable is acceptable.</p>
+
+<p>If there is a requirement that new documents be included quickly, one solution is to maintain two indexes: a large main index and a small auxiliary index that stores new documents. THe auxiliary index is kept in memeory. Seaches are run across both indexes and results merged. Deletions are stored in an invalidation bit vector. We can then filter out deleted documents before returning the search result. Documents are updated by deleting and reinserting.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>LogarithmicMerge()
+Z0 = empty
+indexes = empty
+while true
+do LMergeAddToken(indexes, Z0, GetNextToken())
+
+
+
+LMergeAddToken(indexes, Z0, token)
+Z0 = Merge (Z0, {token})
+if Z0's size = n
+	then for i = 0 to inf	
+		do if I_i is in indexes
+			then Z_i+1 = Merge(I_i,Z_i)
+			//Z_i+1 is a temporary index on disk
+				indexes = indexes - {I_i}
+			else I_i = Z_i  
+			// Z_i becomes the permanent index I_i
+				indexes = indexes + {I_i}
+				break
+		Z0 = empty
+</code></pre>
+</div>
+
+<p>n is the size of the auxiliary index and T is the total number of postings. We can achieve O(T log(T/n)) for time complexity by introducing Indexes I_0, I_1, … of size $2^0 n, 2^1  n , 2^2 n,…$. Each posting is processed only once on each of the log(T/n) levels.We trade indexing efficiency gain for a slow down of query processing; we need to merge results from log(T/n) indexes as opposed to just 2(the main and auxiliary indexes)</p>
+
+<p>Having multiple indexes complicates the maintenance of collection-wide statistics. In fact, all aspects of an IR system: index maintenance, query processing, distribution, and so on are more complex in logarithmic merging. Because of this complexity of dynamic indexing, some large search engines adopt a reconstruction-from-scratch strategy. They do not construct indexes dynamically. Instead, a new index is built from scratch periodically. Query processing is then switched from the new index and the old index is deleted.</p>
+
+<p>####Reference: <br />
+“An Introduction to Information Retrieval”  <br />
+MapReduce , Dean and Ghemawat(2004)</p>
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Random Thoughts</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Random Thoughts
+            
+            </li>
+            
+            <li><a href="mailto:jovechiang@gmail.com">jovechiang@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+          <li>
+            <a href="https://twitter.com/JoveChiang"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">JoveChiang</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>Personal Blog about Technology and Business
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

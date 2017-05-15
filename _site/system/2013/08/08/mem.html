@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Lessons from Memcached</title>
+  <meta name="description" content="This week I spent some time on reading source code of memcached GitHub Link Followings are some lessons. #####Memory Allocattion The memcached server allocat...">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/system/2013/08/08/mem.html">
+  <link rel="alternate" type="application/rss+xml" title="Random Thoughts" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Random Thoughts</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Lessons from Memcached</h1>
+    <p class="post-meta">
+      <time datetime="2013-08-08T00:00:00-07:00" itemprop="datePublished">
+        
+        Aug 8, 2013
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>This week I spent some time on reading source code of memcached <a href="https://github.com/memcached/memcached">GitHub Link</a></p>
+
+<p>Followings are some lessons.</p>
+
+<p>#####Memory Allocattion
+The memcached server allocates memory by using “Slab allocator”. The reason why this slab allocator is used over malloc/free is to avoid <em>fragmentation</em> and the operating system having to spend cycles searching for contiguous blocks of memory. These tasks overall, tend to consume more resources than the memcached process itself. With the slab allocator, memory is allocated in chunks and in turn, is constantly being reused. Because memory is allocated into different size slabs, it will waste memory at some extent if the data being cached does not fit perfectly into the slab. Following is the struct definition of slab, which tells us the size is in powers of N. In current implementation, the largest slab size is 1 MB, which means cached data cannot exceed this size.</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="cm">/* powers-of-N allocation structures */</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="p">;</span>      <span class="cm">/* sizes of items */</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">perslab</span><span class="p">;</span>   <span class="cm">/* how many items per slab */</span>
+
+    <span class="kt">void</span> <span class="o">*</span><span class="n">slots</span><span class="p">;</span>           <span class="cm">/* list of item ptrs */</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">sl_curr</span><span class="p">;</span>   <span class="cm">/* total free items in list */</span>
+
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">slabs</span><span class="p">;</span>     <span class="cm">/* how many slabs were allocated for this class */</span>
+
+    <span class="kt">void</span> <span class="o">**</span><span class="n">slab_list</span><span class="p">;</span>       <span class="cm">/* array of slab pointers */</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">list_size</span><span class="p">;</span> <span class="cm">/* size of prev array */</span>
+
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">killing</span><span class="p">;</span>  <span class="cm">/* index+1 of dying slab, or zero if none */</span>
+    <span class="kt">size_t</span> <span class="n">requested</span><span class="p">;</span> <span class="cm">/* The number of requested bytes */</span>
+<span class="p">}</span> <span class="n">slabclass_t</span><span class="p">;</span></code></pre></figure>
+
+<p>#####Replacement Strategy
+When memcached’s distributed hash table becomes full, the upcoming inserts force older cached data to be cycled out in a LRU order with associated expiration timeouts. Memcached uses <em>lazy expiration</em>. This menas it does not make use of additional CPU cycles to expire items. When data is requestd via a “get” request, memcached references the expiration time to confirm if the data is valid before returnning it to the client requesting the data. When new data is being added to the cache via a “set”, and memcached is unable to allocate an additional slab, expired data will be cycled out prior to any data that qualifies for the LRU criteria.</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="cm">/*
+ * Stores an item in the cache according to the semantics of one of the set
+ * commands. In threaded mode, this is protected by the cache lock.
+ *
+ * Returns the state of storage.
+ */</span>
+<span class="k">enum</span> <span class="n">store_item_type</span> <span class="nf">do_store_item</span><span class="p">(</span><span class="n">item</span> <span class="o">*</span><span class="n">it</span><span class="p">,</span> <span class="kt">int</span> <span class="n">comm</span><span class="p">,</span> <span class="n">conn</span> <span class="o">*</span><span class="n">c</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">hv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">key</span> <span class="o">=</span> <span class="n">ITEM_key</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
+    <span class="n">item</span> <span class="o">*</span><span class="n">old_it</span> <span class="o">=</span> <span class="n">do_item_get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">nkey</span><span class="p">,</span> <span class="n">hv</span><span class="p">);</span>
+    <span class="k">enum</span> <span class="n">store_item_type</span> <span class="n">stored</span> <span class="o">=</span> <span class="n">NOT_STORED</span><span class="p">;</span>
+
+    <span class="n">item</span> <span class="o">*</span><span class="n">new_it</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">flags</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">old_it</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="o">&amp;&amp;</span> <span class="n">comm</span> <span class="o">==</span> <span class="n">NREAD_ADD</span><span class="p">)</span> <span class="p">{</span>
+        <span class="cm">/* add only adds a nonexistent item, but promote to head of LRU */</span>
+        <span class="n">do_item_update</span><span class="p">(</span><span class="n">old_it</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">old_it</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">comm</span> <span class="o">==</span> <span class="n">NREAD_REPLACE</span>
+        <span class="o">||</span> <span class="n">comm</span> <span class="o">==</span> <span class="n">NREAD_APPEND</span> <span class="o">||</span> <span class="n">comm</span> <span class="o">==</span> <span class="n">NREAD_PREPEND</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="cm">/* replace only replaces an existing value; don't store */</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="o">==</span> <span class="n">NREAD_CAS</span><span class="p">)</span> <span class="p">{</span>
+        <span class="cm">/* validate cas operation */</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">old_it</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// LRU expired
+</span>            <span class="n">stored</span> <span class="o">=</span> <span class="n">NOT_FOUND</span><span class="p">;</span>
+            <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">mutex</span><span class="p">);</span>
+            <span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">cas_misses</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">mutex</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">it</span><span class="p">)</span> <span class="o">==</span> <span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">old_it</span><span class="p">))</span> <span class="p">{</span>
+            <span class="c1">// cas validates
+</span>            <span class="c1">// it and old_it may belong to different classes.
+</span>            <span class="c1">// I'm updating the stats for the one that's getting pushed out
+</span>            <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">mutex</span><span class="p">);</span>
+            <span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">slab_stats</span><span class="p">[</span><span class="n">old_it</span><span class="o">-&gt;</span><span class="n">slabs_clsid</span><span class="p">].</span><span class="n">cas_hits</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">mutex</span><span class="p">);</span>
+
+            <span class="n">item_replace</span><span class="p">(</span><span class="n">old_it</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="n">hv</span><span class="p">);</span>
+            <span class="n">stored</span> <span class="o">=</span> <span class="n">STORED</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">mutex</span><span class="p">);</span>
+            <span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">slab_stats</span><span class="p">[</span><span class="n">old_it</span><span class="o">-&gt;</span><span class="n">slabs_clsid</span><span class="p">].</span><span class="n">cas_badval</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="o">-&gt;</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">stats</span><span class="p">.</span><span class="n">mutex</span><span class="p">);</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="n">settings</span><span class="p">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"CAS:  failure: expected %llu, got %llu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+                        <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span><span class="p">)</span><span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">old_it</span><span class="p">),</span>
+                        <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span><span class="p">)</span><span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">it</span><span class="p">));</span>
+            <span class="p">}</span>
+            <span class="n">stored</span> <span class="o">=</span> <span class="n">EXISTS</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="cm">/*
+         * Append - combine new and old record into single one. Here it's
+         * atomic and thread-safe.
+         */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="o">==</span> <span class="n">NREAD_APPEND</span> <span class="o">||</span> <span class="n">comm</span> <span class="o">==</span> <span class="n">NREAD_PREPEND</span><span class="p">)</span> <span class="p">{</span>
+            <span class="cm">/*
+             * Validate CAS
+             */</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">it</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// CAS much be equal
+</span>                <span class="k">if</span> <span class="p">(</span><span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">it</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">old_it</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="n">stored</span> <span class="o">=</span> <span class="n">EXISTS</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">stored</span> <span class="o">==</span> <span class="n">NOT_STORED</span><span class="p">)</span> <span class="p">{</span>
+                <span class="cm">/* we have it and old_it here - alloc memory to hold both */</span>
+                <span class="cm">/* flags was already lost - so recover them from ITEM_suffix(it) */</span>
+
+                <span class="n">flags</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="n">strtol</span><span class="p">(</span><span class="n">ITEM_suffix</span><span class="p">(</span><span class="n">old_it</span><span class="p">),</span> <span class="p">(</span><span class="kt">char</span> <span class="o">**</span><span class="p">)</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+
+                <span class="n">new_it</span> <span class="o">=</span> <span class="n">do_item_alloc</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">nkey</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">old_it</span><span class="o">-&gt;</span><span class="n">exptime</span><span class="p">,</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">nbytes</span> <span class="o">+</span> <span class="n">old_it</span><span class="o">-&gt;</span><span class="n">nbytes</span> <span class="o">-</span> <span class="mi">2</span> <span class="cm">/* CRLF */</span><span class="p">,</span> <span class="n">hv</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">new_it</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="cm">/* SERVER_ERROR out of memory */</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">old_it</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+                        <span class="n">do_item_remove</span><span class="p">(</span><span class="n">old_it</span><span class="p">);</span>
+
+                    <span class="k">return</span> <span class="n">NOT_STORED</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="cm">/* copy data from it and old_it to new_it */</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="o">==</span> <span class="n">NREAD_APPEND</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">memcpy</span><span class="p">(</span><span class="n">ITEM_data</span><span class="p">(</span><span class="n">new_it</span><span class="p">),</span> <span class="n">ITEM_data</span><span class="p">(</span><span class="n">old_it</span><span class="p">),</span> <span class="n">old_it</span><span class="o">-&gt;</span><span class="n">nbytes</span><span class="p">);</span>
+                    <span class="n">memcpy</span><span class="p">(</span><span class="n">ITEM_data</span><span class="p">(</span><span class="n">new_it</span><span class="p">)</span> <span class="o">+</span> <span class="n">old_it</span><span class="o">-&gt;</span><span class="n">nbytes</span> <span class="o">-</span> <span class="mi">2</span> <span class="cm">/* CRLF */</span><span class="p">,</span> <span class="n">ITEM_data</span><span class="p">(</span><span class="n">it</span><span class="p">),</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">nbytes</span><span class="p">);</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="cm">/* NREAD_PREPEND */</span>
+                    <span class="n">memcpy</span><span class="p">(</span><span class="n">ITEM_data</span><span class="p">(</span><span class="n">new_it</span><span class="p">),</span> <span class="n">ITEM_data</span><span class="p">(</span><span class="n">it</span><span class="p">),</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">nbytes</span><span class="p">);</span>
+                    <span class="n">memcpy</span><span class="p">(</span><span class="n">ITEM_data</span><span class="p">(</span><span class="n">new_it</span><span class="p">)</span> <span class="o">+</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">nbytes</span> <span class="o">-</span> <span class="mi">2</span> <span class="cm">/* CRLF */</span><span class="p">,</span> <span class="n">ITEM_data</span><span class="p">(</span><span class="n">old_it</span><span class="p">),</span> <span class="n">old_it</span><span class="o">-&gt;</span><span class="n">nbytes</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="n">it</span> <span class="o">=</span> <span class="n">new_it</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">stored</span> <span class="o">==</span> <span class="n">NOT_STORED</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">old_it</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+                <span class="n">item_replace</span><span class="p">(</span><span class="n">old_it</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="n">hv</span><span class="p">);</span>
+            <span class="k">else</span>
+                <span class="n">do_item_link</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">hv</span><span class="p">);</span>
+
+            <span class="n">c</span><span class="o">-&gt;</span><span class="n">cas</span> <span class="o">=</span> <span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
+
+            <span class="n">stored</span> <span class="o">=</span> <span class="n">STORED</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">old_it</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+        <span class="n">do_item_remove</span><span class="p">(</span><span class="n">old_it</span><span class="p">);</span>         <span class="cm">/* release our reference */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">new_it</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+        <span class="n">do_item_remove</span><span class="p">(</span><span class="n">new_it</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">stored</span> <span class="o">==</span> <span class="n">STORED</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">c</span><span class="o">-&gt;</span><span class="n">cas</span> <span class="o">=</span> <span class="n">ITEM_get_cas</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">stored</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>#####Data Redundancy and Reproduce
+By design, there are no data redundancy features built into memcached. Memcached is designed to be a scalable and high performance caching-layer, including data redundancy functionality would only add complexity and overhead to the system.</p>
+
+<p>If memcached servers suffer from a loss of data, it should still be able to retrieve its data from the original source database.</p>
+
+<p>Another thing is memcached does not have any built in reproduce operation when first attempt fails. One can simply have an abundance of nodes. Because memcached is designed to scale straight out-of-the-box, this is a key characteristic to exploit. Having plenty of memcached nodes minimizes the overall impact an outage of one or more nodes will have on the system as a whole.</p>
+
+<p>#####Loading Memcached
+In general, “warming-up” memcached from a database dump is not the best course of 
+action to take. Several issues arise with this method. First, changes to data that have 
+occurred between the data dump and load will not be accounted for. Second, there must be 
+some strategy for dealing with data that may have expired prior to the dump being loaded.</p>
+
+<p>In situations where there are large amounts of fairly static or permanent data to be cached, 
+using a data dump/load can be useful for warming up the cache quickly.</p>
+
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Random Thoughts</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Random Thoughts
+            
+            </li>
+            
+            <li><a href="mailto:jovechiang@gmail.com">jovechiang@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+          <li>
+            <a href="https://twitter.com/JoveChiang"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">JoveChiang</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>Personal Blog about Technology and Business
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

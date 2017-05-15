@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>The Probabilistic Relevance Framework</title>
+  <meta name="description" content="####Introduction The Probabilistic Relevance Framework (PRF) is a formal framework for document retrieval, grouned in work done in the 1970-1980s, which led ...">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/information_retrieval/system/algorithm/2013/07/09/PF.html">
+  <link rel="alternate" type="application/rss+xml" title="Random Thoughts" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Random Thoughts</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">The Probabilistic Relevance Framework</h1>
+    <p class="post-meta">
+      <time datetime="2013-07-09T00:00:00-07:00" itemprop="datePublished">
+        
+        Jul 9, 2013
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>####Introduction
+The Probabilistic Relevance Framework (PRF) is a formal framework for document retrieval, grouned in work done in the 1970-1980s, which led to the development of one of the most successful text-retrieval algorithms, <em>BM25</em>. In recent years, research in the PRF has yielded new retrieval models capable of taking into account document meta-data (especially structure and link-graph information). This led to one of the most successful Web-search and cororate-search algorithms, <em>BM25F</em>.</p>
+
+<p>####Basic Model</p>
+<h5 id="some-notation">Some notation</h5>
+<p>rank equivalence : $\propto_{q}$ eg. $g() \propto_{q} h()$    <br />
+relevance $Rel$: $rel,\bar{rel}$  (relevant or not)    <br />
+document:   $d = (tf_{1},\ldots, tf_{|V|})$,  where $tf_i$ normally represents the frequency of term $t_i$   <br />
+query:  $q = (qtf_{1},\ldots,qtf_{|V|})$, where $qtf_i$ represents term frequencies in the query or may represent a binary presence or absence feature.</p>
+
+<p>#####Development of Basic Model
+We start with the very general PRF, and end up with an explicit document scoring function.
+$P(rel|d,q) \propto_{q}\frac{P(rel|d,q)}{P(\bar{rel}|d,q)} = \frac{P(d|rel,q) P(rel|q)}{P(d|\bar{rel},q)P(\bar{rel}|q)}$    <br />
+$\propto_{q} \frac{P(d|rel,q)}{P(d|\bar{rel},q)} $</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>$\approx \prod_{i \in V} \frac{P(TF_i = tf_i</td>
+      <td>rel, q)}{P(TF_i = tf_i</td>
+      <td>\bar{rel}, q)}$</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>$\approx \prod_{i \in q} \frac{P(TF_i = tf_i</td>
+      <td>rel)}{P(TF_i = tf_i</td>
+      <td>\bar{rel})}$</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>$\propto_{q}  \sum_q \log \frac{P(TF_i = tf_i</td>
+      <td>rel)}{P(TF_i = tf_i</td>
+      <td>\bar{rel})}$</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>Let $U_i(x) = \log \frac{P(TF_i =x</td>
+      <td>rel)}{P(TF_i =x</td>
+      <td>\bar{rel})}$, then we have</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>$=\sum_q U_i (tf_i)$</p>
+
+<p>$= \sum_{q,tf_i&gt;0} U_i(tf_i) + \sum_{q, tf_i=0} U_i(0) - \sum_{q, tf_i&gt;0}U_i(0) + \sum_{q, tf_i&gt;0} U_i(0)$</p>
+
+<p>$= \sum_{q,tf_i&gt;0} (U_i(tf_i) - U_i(0)) + \sum_q U_i(0)$</p>
+
+<p>$\propto_{q} \sum_{q,tf_i&gt;0} (U_i(tf_i) - U_i(0))$</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>let $W_i(x) = U_i(x) - U_i(0) = \log \frac{P(TF_i = x</td>
+      <td>rel) P(TF_i =0</td>
+      <td>\bar{rel})}{P(TF_i=x</td>
+      <td>\bar{rel})P(TF_i=0</td>
+      <td>rel)}$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>and $w_i = W_i(tf_i)$, we finally have:</p>
+
+<p>$\sum_{q,tf_i&gt;0} w_i$</p>
+
+<p>####Derived Models
+#####The binary independent model
+Suppose that $TF_i$ is a binary variable, having only the values zero and one. Now we got new $w_i$:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>$w_i^{BIM} = \log \frac{P(t_i</td>
+      <td>rel)(1- P(t_i</td>
+      <td>\bar{rel}))}{1-P(t_i</td>
+      <td>rel)P(t_i</td>
+      <td>\bar{rel})}$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Let’s get into detail about deriving a “relevance” property since above equation is conditional on the relevance property.</p>
+
+<p>Notation
+$N$   size of the judged sample     <br />
+$n_i$ Number of documents in the judged sample containing term $t_i$     <br />
+$R$   Relevant set size( number of documents judged relevant )     <br />
+$r_i$  Number of judged relevant docs containing term $t_i$</p>
+
+<p>#####Robertson Sprck Jones weight</p>
+
+<p>$w_i^{RSJ} = \log \frac{(r_i+0.5)(N-R -n_i + r_i +0.5)}{(n_i-r_i+0.5)(R-r_i+0.5)}$</p>
+
+<p>Next, we suppose that some documents, probably a small number, have been retrieved and judged—this is the usual <em>relevance feedback scenario.</em></p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>And, we suppose that we have no relevance information at all(the most usual scenario). In this case, we can only assume that the relevance probability $P(t_i</td>
+      <td>rel)$ is fixed, but we can continue to use the complement method for the non-relevance probability. All this can be achieved by setting $R=r_i=0$ in the RSJ formula. This resulting fomula is a close approximation to classical $IDF$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>$w_i^{IDF} = \log \frac{N-n_i+0.5}{n_i+0.5}$</p>
+
+<p>####The Eliteness Model
+We suppose that for any document-term pair there is a hidden property which we refer to as $eliteness$ This can be interpreted as a form of aboutness: if the term is elite in the document, in some sense the document is about the concept denoted by the term.</p>
+
+<p>#####2-Poisson Model
+New notation:  The eliteness random variable $E$ can take two values:</p>
+
+<p>$E$ : $elite$, $\bar{elite}$</p>
+
+<p>We now decompose all the probabilities we want using these tow disjoint events, following this pattern:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>$P(\alpha</td>
+      <td>\beta) = P(\alpha</td>
+      <td>elite)P(elite</td>
+      <td>\beta) + P(\alpha</td>
+      <td>\bar{elite})P(\bar{elite}</td>
+      <td>\beta)$.</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>Let $p_{i1} = P(E_i = elite</td>
+      <td>rel)$ and $p_{i0} = P(E_i = elite</td>
+      <td>\bar{rel})$</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>$E_{i1}(tf) = P(TF_i=TF</td>
+      <td>E_i = elite)$ and $E_{i0}(tf) = P(TF_i=TF</td>
+      <td>E_i = \bar{elite})$</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>We can get this : $P(TF_i = tf</td>
+      <td>rel) = p_{i1} E_{i1}(tf) + (1 - p_{i1} E_{i0}(tf))$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This gives us an equation for our term-weights:</p>
+
+<p>$w_{i}^{elite} = \log \frac{(p_1E_1(tf) + (1-p_1)E_0(tf))(p_0E_1(0)+(1-p_0)E_0(0))}{(p_1E_1(0)+(1-p_1)E_0(0))(p_0E_1(tf)+(1-p_0)E_0(tf))}$</p>
+
+<p>More specifically, we make distributional assumptions about these events. From $Harter$, we assume that the distributions of term frequencies across documents, conditioned on eliteness, are Poisson:</p>
+
+<p>$E_{ie}(tf) \sim Poisson(\lambda_{ie})$ (Poisson with mean $\lambda_{ie}$)</p>
+
+<p>We note the following characterisitics of this model:</p>
+
+<ol>
+  <li>
+    <p>The model of topicality is a very simple one – one word one topic.</p>
+  </li>
+  <li>
+    <p>There is no attempt to normalise the probabilities across the full unigram model for the document.</p>
+  </li>
+  <li>
+    <p>The model depends fairly crucially on the notion that all documents are of the same(fixed) length</p>
+  </li>
+</ol>
+
+<p>If we plug the Poisson distributional assumptions into above equation, we can express the term weight as a function of the two means $\lambda_{e}$ and the mixing proportion of elite and non-elite documents in the collection(as well as the observed tf). This is a somewhat messy formula.</p>
+
+<p>We note:</p>
+<ol>
+  <li>$w_{i}^{elite}(0) = 0$</li>
+  <li>$w_{i}^{elite}(tf)$ increases monotonically with $tf$;</li>
+  <li>However, asymptotically approaches a maximum value as $tf \rightarrow \infty$</li>
+  <li>and the asymptotic limit being:</li>
+</ol>
+
+<p>$\lim_{tf\rightarrow\infty} w_i^{elite}(tf) = \log \frac{p_1(1-p_0)}{(1-p_1)p_0} = w_i^{BIM}$</p>
+
+<p>####BM25
+Notation: 
+soft length normlisation:  $B = ((1-b) + b\frac{dl}{avdl})$ ,</p>
+
+<p>where $dl = \sum_{i\in V} tf_i$ it’s document length,</p>
+
+<p>$avdl$ is the average document length. $b$ is normlisation parameter and setting $b=1$will perform full document-length normalisation</p>
+
+<p>$tf’ = \frac{tf}{B}$</p>
+
+<p>$w_{i}^{BM25}(tf) = \frac{tf’}{k_1+tf’} w_i^{RSJ}$</p>
+
+<p>$=\frac{tf}{k_1((1-b) + b\frac{dl}{avdl})+tf} w_i^{RSJ}$</p>
+
+<p>where $k_1$ is a $saturation$ parameter. For high $k_1$, increments in $tf$ continue to contribute significantly to the score, whereas for low $k_1$, the additional contribution of a newly observed occourrence tails off ver rapidly.</p>
+
+<p>####Reference
+“The Probabilistic Relevance Framework BM25 and Beyond” by Stephen Robertson and Hugo Zaragoza</p>
+
+<p>“A probabilistic approach to automatic keyword indexing” S.P.Harter</p>
+
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Random Thoughts</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Random Thoughts
+            
+            </li>
+            
+            <li><a href="mailto:jovechiang@gmail.com">jovechiang@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+          <li>
+            <a href="https://twitter.com/JoveChiang"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">JoveChiang</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>Personal Blog about Technology and Business
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
