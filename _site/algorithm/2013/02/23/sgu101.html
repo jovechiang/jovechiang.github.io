@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>SGU101</title>
-  <meta name="description" content="###SGU link is here">
+  <meta name="description" content="SGU link is here">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="http://localhost:4000/algorithm/2013/02/23/sgu101.html">
@@ -77,76 +77,71 @@
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>###SGU link is <a href="http://acm.sgu.ru/problem.php?contest=0&amp;problem=101">here</a></p>
+    <h3>SGU link is <a href="http://acm.sgu.ru/problem.php?contest=0&problem=101">here</a></h3>
 
-<p>#101 Domino
-Dominoes – game played with small, rectangular blocks of wood or other material, each identified by a number of dots, or pips, on its face. The blocks usually are called bones, dominoes, or pieces and sometimes men, stones, or even cards.
-The face of each piece is divided, by a line or ridge, into two squares, each of which is marked as would be a pair of dice…</p>
+<h1>101 Domino</h1>
+
+<p>Dominoes – game played with small, rectangular blocks of wood or other material, each identified by a number of dots, or pips, on its face. The blocks usually are called bones, dominoes, or pieces and sometimes men, stones, or even cards.
+The face of each piece is divided, by a line or ridge, into two squares, each of which is marked as would be a pair of dice...</p>
 
 <p>The principle in nearly all modern dominoes games is to match one end of a piece to another that is identically or reciprocally numbered.</p>
 
-<p>###ENCYCLOPAEDIA BRITANNICA</p>
+<h3>ENCYCLOPAEDIA BRITANNICA</h3>
 
 <p>Given a set of domino pieces where each side is marked with two digits from 0 to 6. Your task is to arrange pieces in a line such way, that they touch through equal marked sides. It is possible to rotate pieces changing left and right side.</p>
 
-<p>###Input</p>
+<h3>Input</h3>
 
 <p>The first line of the input contains a single integer N (1 ≤ N ≤ 100) representing the total number of pieces in the domino set. The following N lines describe pieces. Each piece is represented on a separate line in a form of two digits from 0 to 6 separated by a space.</p>
 
-<p>###Output</p>
+<h3>Output</h3>
 
 <p>Write “No solution” if it is impossible to arrange them described way. If it is possible, write any of way. Pieces must be written in left-to-right order. Every of N lines must contains number of current domino piece and sign “+” or “-“ (first means that you not rotate that piece, and second if you rotate it).</p>
 
-<p>###Sample Input</p>
+<h3>Sample Input</h3>
 
-<p>5<br />
-1 2<br />
-2 4<br />
-2 4<br />
-6 4<br />
-2 1</p>
+<p>5<br>
+1 2<br>
+2 4<br>
+2 4<br>
+6 4<br>
+2 1  </p>
 
-<h3 id="sample-output">Sample Output</h3>
+<h3>Sample Output</h3>
 
-<p>2 -<br />
-5 +<br />
-1 +<br />
-3 +<br />
-4 -</p>
+<p>2 -<br>
+5 +<br>
+1 +<br>
+3 +<br>
+4 -  </p>
 
-<h3 id="solution">Solution</h3>
+<h3>Solution</h3>
 
 <p>We only need to find the Euler path. Every domino is an edge. The vertices are 1~7.</p>
 
-<p>###Fleury’s  Algorithm (Euler trial)
-Let $G$ be a connected graph. If $G$ is Eulerian then Fleury’s Algorithm will produce an Eulerian trial in $G$.</p>
+<h3>Fleury’s  Algorithm (Euler trial)</h3>
+
+<p>Let $G$ be a connected graph. If $G$ is Eulerian then Fleury&#39;s Algorithm will produce an Eulerian trial in $G$.</p>
 
 <p>In a connected graph $G$, a <strong>bridge</strong> is an edge which, if removed, produces a disconnected graph.</p>
 
-<p>###Fleury’s Algorithm</p>
+<h3>Fleury&#39;s Algorithm</h3>
+
 <ol>
-  <li>
-    <p>Choose any vertex $v$ of $G$ and set <strong>current vertex</strong> equal to $v$ and <strong>current trail</strong> equal to the empty sequence of edges</p>
-  </li>
-  <li>
-    <p>Select any edge $e$ incident with the <strong>current vertex</strong> but choosing a bridge only if there is no alternative</p>
-  </li>
-  <li>
-    <p>Add $e$ to the <strong>current trail</strong> and set the <strong>current vertex</strong> equal to the vertex at the other end of $e$. if $e$ is a loop, the <strong>current vertex</strong> will not move</p>
-  </li>
-  <li>
-    <p>Delete $e$ from the graph. Delete any isolated vertices.
-Repeate steps 2 - 4 untill all edges have been deleted from $G$. The final <strong>current trail</strong> is an Eulerian trail in $G$</p>
-  </li>
+<li><p>Choose any vertex $v$ of $G$ and set <strong>current vertex</strong> equal to $v$ and <strong>current trail</strong> equal to the empty sequence of edges</p></li>
+<li><p>Select any edge $e$ incident with the <strong>current vertex</strong> but choosing a bridge only if there is no alternative</p></li>
+<li><p>Add $e$ to the <strong>current trail</strong> and set the <strong>current vertex</strong> equal to the vertex at the other end of $e$. if $e$ is a loop, the <strong>current vertex</strong> will not move</p></li>
+<li><p>Delete $e$ from the graph. Delete any isolated vertices.
+Repeate steps 2 - 4 untill all edges have been deleted from $G$. The final <strong>current trail</strong> is an Eulerian trail in $G$</p></li>
 </ol>
 
-<p>###Code</p>
+<h3>Code</h3>
 
 <figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="cp">#include &lt;iostream&gt;
 </span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 <span class="k">struct</span> <span class="n">D</span>
 <span class="p">{</span>
-	<span class="kt">int</span> <span class="n">right</span><span class="p">,</span><span class="n">left</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">right</span><span class="p">,</span><span class="n">left</span><span class="p">;</span>
 <span class="p">};</span>
 <span class="n">D</span> <span class="n">d</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span>
 <span class="kt">int</span> <span class="n">n</span><span class="p">;</span>
@@ -158,91 +153,92 @@ Repeate steps 2 - 4 untill all edges have been deleted from $G$. The final <stro
 <span class="kt">bool</span> <span class="n">use</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span>
 <span class="kt">int</span> <span class="nf">find</span><span class="p">(</span><span class="kt">int</span> <span class="n">l</span><span class="p">,</span><span class="kt">int</span> <span class="n">r</span><span class="p">,</span><span class="kt">int</span> <span class="n">k</span><span class="p">)</span>
 <span class="p">{</span>
-	<span class="kt">int</span> <span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">;</span>
-	<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
-	<span class="p">{</span>
-		<span class="k">if</span><span class="p">(</span><span class="n">use</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-			<span class="k">continue</span><span class="p">;</span>
-		<span class="n">k1</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">;</span>
-		<span class="n">k2</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="p">;</span>
-		<span class="k">if</span><span class="p">(</span><span class="n">k1</span> <span class="o">==</span> <span class="n">r</span><span class="o">&amp;&amp;</span><span class="n">k2</span> <span class="o">==</span> <span class="n">l</span><span class="p">)</span>
-		<span class="p">{</span>
-			<span class="n">ans</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-			<span class="n">op</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'+'</span><span class="p">;</span>
-			<span class="n">k</span><span class="o">++</span><span class="p">;</span>
-			<span class="n">use</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-			<span class="k">return</span> <span class="n">i</span><span class="p">;</span>
-		<span class="p">}</span>
-		<span class="k">else</span>
-			<span class="k">if</span><span class="p">(</span><span class="n">k1</span> <span class="o">==</span> <span class="n">l</span><span class="o">&amp;&amp;</span><span class="n">k2</span> <span class="o">==</span> <span class="n">r</span><span class="p">)</span>
-			<span class="p">{</span>
-				<span class="n">ans</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-				<span class="n">op</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'-'</span><span class="p">;</span>
-				<span class="n">k</span><span class="o">++</span><span class="p">;</span>
-				<span class="n">use</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-				<span class="k">return</span> <span class="n">i</span><span class="p">;</span>
-			<span class="p">}</span>
-	<span class="p">}</span>
+    <span class="kt">int</span> <span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">use</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="n">k1</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">;</span>
+        <span class="n">k2</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">k1</span> <span class="o">==</span> <span class="n">r</span><span class="o">&amp;&amp;</span><span class="n">k2</span> <span class="o">==</span> <span class="n">l</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">ans</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="n">op</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'+'</span><span class="p">;</span>
+            <span class="n">k</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">use</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">k1</span> <span class="o">==</span> <span class="n">l</span><span class="o">&amp;&amp;</span><span class="n">k2</span> <span class="o">==</span> <span class="n">r</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">ans</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="n">op</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'-'</span><span class="p">;</span>
+                <span class="n">k</span><span class="o">++</span><span class="p">;</span>
+                <span class="n">use</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+                <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+            <span class="p">}</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 <span class="kt">void</span> <span class="nf">DFS</span><span class="p">(</span><span class="kt">int</span> <span class="n">v</span><span class="p">,</span><span class="kt">int</span> <span class="n">kb</span><span class="p">,</span><span class="kt">int</span> <span class="n">g1</span><span class="p">[][</span><span class="mi">7</span><span class="p">])</span>
-<span class="p">{</span>	
-	<span class="k">if</span><span class="p">(</span><span class="n">finder</span><span class="p">)</span>
-		<span class="k">return</span><span class="p">;</span>
-	<span class="k">if</span><span class="p">(</span><span class="n">kb</span> <span class="o">==</span> <span class="n">n</span><span class="p">)</span>
-	<span class="p">{</span>
-		<span class="n">finder</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-		<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
-			<span class="n">cout</span><span class="o">&lt;&lt;</span><span class="n">ans</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="s">" "</span><span class="o">&lt;&lt;</span><span class="n">op</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;;</span>
-		<span class="k">return</span><span class="p">;</span>
-	<span class="p">}</span>
-	<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">7</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
-	<span class="p">{</span>
-		<span class="k">if</span><span class="p">(</span><span class="n">g1</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-		<span class="p">{</span>
-			<span class="kt">int</span> <span class="n">kl1</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kb</span><span class="p">);</span>
-			<span class="n">g1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">v</span><span class="p">]</span><span class="o">--</span><span class="p">;</span>
-			<span class="n">g1</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">--</span><span class="p">;</span>
-			<span class="n">DFS</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">kb</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span><span class="n">g1</span><span class="p">);</span>
-			<span class="n">use</span><span class="p">[</span><span class="n">kl1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-			<span class="n">g1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">v</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
-			<span class="n">g1</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
+<span class="p">{</span>    
+    <span class="k">if</span><span class="p">(</span><span class="n">finder</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">kb</span> <span class="o">==</span> <span class="n">n</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">finder</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+            <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="n">ans</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="s">" "</span><span class="o">&lt;&lt;</span><span class="n">op</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;;</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">7</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">g1</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="kt">int</span> <span class="n">kl1</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kb</span><span class="p">);</span>
+            <span class="n">g1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">v</span><span class="p">]</span><span class="o">--</span><span class="p">;</span>
+            <span class="n">g1</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">--</span><span class="p">;</span>
+            <span class="n">DFS</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">kb</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span><span class="n">g1</span><span class="p">);</span>
+            <span class="n">use</span><span class="p">[</span><span class="n">kl1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+            <span class="n">g1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">v</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">g1</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
 <span class="p">{</span>
-	<span class="n">cin</span><span class="o">&gt;&gt;</span><span class="n">n</span><span class="p">;</span>
-	<span class="kt">int</span> <span class="n">start</span><span class="p">;</span>
-	<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
-	<span class="p">{</span>
-		<span class="n">cin</span><span class="o">&gt;&gt;</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="o">&gt;&gt;</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">;</span>
-		<span class="n">start</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">;</span>
-		<span class="n">g</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="p">][</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
-		<span class="n">g</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">][</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
-		<span class="n">degree</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
-		<span class="n">degree</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
-	<span class="p">}</span>
-	<span class="kt">int</span> <span class="n">oddp</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-	<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;=</span><span class="mi">6</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
-	<span class="p">{</span>
-		<span class="k">if</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">%</span><span class="mi">2</span><span class="p">)</span>
-		<span class="p">{</span>
-			<span class="n">start</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
-			<span class="n">oddp</span><span class="o">++</span><span class="p">;</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-	<span class="k">if</span><span class="p">(</span><span class="n">oddp</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span>
-	<span class="p">{</span>		
-		<span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"No solution"</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-		<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-	<span class="p">}</span>
-	<span class="n">DFS</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">g</span><span class="p">);</span>
-	<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">finder</span><span class="p">)</span>
-	<span class="p">{</span>		
-		<span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"No solution"</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-		<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-	<span class="p">}</span>
+    <span class="n">cin</span><span class="o">&gt;&gt;</span><span class="n">n</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">start</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">cin</span><span class="o">&gt;&gt;</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="o">&gt;&gt;</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">;</span>
+        <span class="n">g</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="p">][</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">g</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">][</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">degree</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">left</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">degree</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">right</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kt">int</span> <span class="n">oddp</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;=</span><span class="mi">6</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">%</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+            <span class="n">oddp</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">oddp</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">{</span>        
+        <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"No solution"</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">DFS</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">g</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">finder</span><span class="p">)</span>
+    <span class="p">{</span>        
+        <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"No solution"</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
 <span class="p">}</span></code></pre></figure>
+
 <p>}</p>
 
   </div>

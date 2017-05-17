@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Topic Model-- LDA</title>
-  <meta name="description" content="####Introduction In real Infromation Retrieval (Google, Bing), when we gather many online documents, we need to classify them according to their topic. For t...">
+  <meta name="description" content="Introduction In real Infromation Retrieval (Google, Bing), when we gather many online documents, we need to classify them according to their topic. For this ...">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="http://localhost:4000/machine_learning/algorithm/system/2013/07/01/LDA.html">
@@ -77,55 +77,46 @@
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>####Introduction
-In real Infromation Retrieval (Google, Bing), when we gather many online documents, we need to classify them according to their topic. For this task, we need a machine learning algorithm to do the classification.</p>
+    <h4>Introduction</h4>
 
-<table>
-  <tbody>
-    <tr>
-      <td>One way is to use <em>naive bayes</em> to choose the topic with maximal posterior probability $P(topic</td>
-      <td>document)$. In this approach, there are 2 models available:  <em>multivariate Bernoulli model</em> and <em>multinomial model</em>.</td>
-    </tr>
-  </tbody>
-</table>
+<p>In real Infromation Retrieval (Google, Bing), when we gather many online documents, we need to classify them according to their topic. For this task, we need a machine learning algorithm to do the classification.</p>
+
+<p>One way is to use <em>naive bayes</em> to choose the topic with maximal posterior probability $P(topic|document)$. In this approach, there are 2 models available:  <em>multivariate Bernoulli model</em> and <em>multinomial model</em>.</p>
 
 <p>But in 2003, David Blei, Andrew Ng, and Michael Jordan introduced <em>LDA</em> into this area, presented as a graphical model for topic discovery.</p>
 
-<p>####Basics
-In LDA, each document may be viewed as a mixture of various topics. This is similar to <em>probabilistic latent semantic analysis</em>, except that in LDA the topic distribution is assumed to have a <em>Dirichlet prior</em>. In practice, this results in more reasonable mixtures of topics in a document.</p>
+<h4>Basics</h4>
 
-<p>####Model</p>
+<p>In LDA, each document may be viewed as a mixture of various topics. This is similar to <em>probabilistic latent semantic analysis</em>, except that in LDA the topic distribution is assumed to have a <em>Dirichlet prior</em>. In practice, this results in more reasonable mixtures of topics in a document.</p>
 
-<p><img src="/assets/images/LDA.JPG" alt="LDA" title="LDA MODEL" width="70%" /></p>
+<h4>Model</h4>
 
-<p>The outer plate represents documents, while the inner plate represents the repeated choice of topics and words within a document. $M$ denotes the number of documents, $N$ the number of words in a document.</p>
+<p><img src = "/assets/images/LDA.JPG" alt = "LDA" title ="LDA MODEL" width ="70%"  /></p>
 
-<p>$\alpha$ is the parameter of the Dirichlet prior on the per-document topic distribution.   <br />
-$\beta$ is the parameter of the Dirichlet prior on the per-topic word distribution.  <br />
-$\Theta_i$ is the topic distribution for document i.    <br />
-$\phi_k$ is the word distribution for topic k   <br />
-$z_{ij}$ is the topic for the $j$th word in document i   <br />
-$w_{ij}$ is the specific word</p>
+<p>The outer plate represents documents, while the inner plate represents the repeated choice of topics and words within a document. $M$ denotes the number of documents, $N$ the number of words in a document. </p>
 
-<p>The $w_{ij}$ are the only observable variables, and the other variables are latent variables.</p>
+<p>$\alpha$ is the parameter of the Dirichlet prior on the per-document topic distribution.<br>
+$\beta$ is the parameter of the Dirichlet prior on the per-topic word distribution.<br>
+$\Theta<em>i$ is the topic distribution for document i.<br>
+$\phi</em>k$ is the word distribution for topic k<br>
+$z<em>{ij}$ is the topic for the $j$th word in document i<br>
+$w</em>{ij}$ is the specific word      </p>
 
-<p>The gernerative process behind is that documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. LDA assumes the following generative process for each document $i$ in a corpus D:</p>
+<p>The $w_{ij}$ are the only observable variables, and the other variables are latent variables. </p>
+
+<p>The gernerative process behind is that documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. LDA assumes the following generative process for each document $i$ in a corpus D:<br>
+1. Choose $\Theta_i \thicksim Dir(\alpha)$, where $i \in {1,\ldots M}$ and $Dir(\alpha)$ is the Dirichlet distribution for parameter $\alpha$</p>
+
 <ol>
-  <li>
-    <p>Choose $\Theta_i \thicksim Dir(\alpha)$, where $i \in {1,\ldots M}$ and $Dir(\alpha)$ is the Dirichlet distribution for parameter $\alpha$</p>
-  </li>
-  <li>
-    <p>Choose $\phi_k \thicksim Dir(\beta)$, where $k \in {1,\ldots,K}$</p>
-  </li>
-  <li>
-    <p>For each of the word $w_{ij}$, where $j \in {1,\ldots,N_i}$    <br />
-3a. Choose a topic $z_{ij} \thicksim Multinomial(\Theta_i)$        <br />
-3b. Choose a word $w_{ij} \thicksim Multinomial(\phi_{zi,j})$</p>
-  </li>
+<li><p>Choose $\phi_k \thicksim Dir(\beta)$, where $k \in {1,\ldots,K}$</p></li>
+<li><p>For each of the word $w<em>{ij}$, where $j \in {1,\ldots,N</em>i}$<br>
+3a. Choose a topic $z<em>{ij} \thicksim Multinomial(\Theta</em>i)$<br>
+3b. Choose a word $w<em>{ij} \thicksim Multinomial(\phi</em>{zi,j})$       </p></li>
 </ol>
 
-<p>####Inference
-There is a long long long inference process… So if you are interested in the entire inference, refer to PRML</p>
+<h4>Inference</h4>
+
+<p>There is a long long long inference process... So if you are interested in the entire inference, refer to PRML</p>
 
   </div>
 

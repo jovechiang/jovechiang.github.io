@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Data Infrastructure - Graph Traversal Pattern II</title>
-  <meta name="description" content="####Graph Traversals A traversal means visting elements (vertices and edges) in a graph in some algorithmic fashion. This subsection will introduce a functio...">
+  <meta name="description" content="Graph Traversals A traversal means visting elements (vertices and edges) in a graph in some algorithmic fashion. This subsection will introduce a functional ...">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="http://localhost:4000/system/2013/08/17/GTP2.html">
@@ -77,71 +77,76 @@
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>####Graph Traversals
-A traversal means visting elements (vertices and edges) in a graph in some algorithmic fashion. This subsection will introduce a functional flowbased approach to traversing property graphs and how different types of traversals over different types of graph datasets support different types of problem-solving.</p>
+    <h4>Graph Traversals</h4>
 
-<p>The most primitive, read-based operation on a graph is a single step traversal from element $i$ to element $j$, where $i,j \in (V \cup E)$. For example, “Find the outgoing edges from this vertex”,”Find the vertex that is at the end of this edge”. Single step operations expose explicit adjacencies in the graph. Following list itemizes the various types of single step traversals.</p>
+<p>A traversal means visting elements (vertices and edges) in a graph in some algorithmic fashion. This subsection will introduce a functional flowbased approach to traversing property graphs and how different types of traversals over different types of graph datasets support different types of problem-solving.</p>
 
-<p>$e_{out}$ : traverse to the outgoing edges of the vertices  <br />
-$e_{in}$ :traverse to the incoming edges to the vertices    <br />
-$v_{out}$ : traverse to the outgoing (or say tail) vertices of the edges   <br />
-$v_{in}$ : traverse the incoming(or say head) vertices of the edges   <br />
-$\epsilon$ : get the element property values for given key</p>
+<p>The most primitive, read-based operation on a graph is a single step traversal from element $i$ to element $j$, where $i,j \in (V \cup E)$. For example, &quot;Find the outgoing edges from this vertex&quot;,&quot;Find the vertex that is at the end of this edge&quot;. Single step operations expose explicit adjacencies in the graph. Following list itemizes the various types of single step traversals. </p>
+
+<p>$e<em>{out}$ : traverse to the outgoing edges of the vertices<br>
+$e</em>{in}$ :traverse to the incoming edges to the vertices<br>
+$v<em>{out}$ : traverse to the outgoing (or say tail) vertices of the edges<br>
+$v</em>{in}$ : traverse the incoming(or say head) vertices of the edges<br>
+$\epsilon$ : get the element property values for given key      </p>
 
 <p>When edges are labeled and elements have properties, it is desirable to constrain the traversal to edges of a particular label or elements with particular label or elements with particular properties. These operations are known as filters and are abstractly defined as following:</p>
 
-<p>$e_{lab+}$ allow all edges with label  <br />
-$e_{lab-}$ filter all edges with label   <br />
-$\epsilon_{p+}$ allow all elements with the property  <br />
-$\epsilon_{p-}$ filter all elements with the property   <br />
-$\epsilon_{\epsilon +}$ allow all elements that are the provided element   <br />
-$\epsilon_{\epsilon -}$ filter all elements that are the provided element</p>
+<p>$e<em>{lab+}$ allow all edges with label<br>
+$e</em>{lab-}$ filter all edges with label<br>
+$\epsilon<em>{p+}$ allow all elements with the property<br>
+$\epsilon</em>{p-}$ filter all elements with the property<br>
+$\epsilon<em>{\epsilon +}$ allow all elements that are the provided element<br>
+$\epsilon</em>{\epsilon -}$ filter all elements that are the provided element     </p>
 
-<p>A simple example is traversing to the names of Alberto Pepe’s friends of last post. If $i$ is the vertex representing Alberto Pepe.</p>
+<p>A simple example is traversing to the names of Alberto Pepe&#39;s friends of last post. If $i$ is the vertex representing Alberto Pepe.</p>
 
-<p>$f(i) = \epsilon(v_{int}(e_{lab+}(e_{out}(i),friend)), name)$</p>
+<p>$f(i) = \epsilon(v<em>{int}(e</em>{lab+}(e_{out}(i),friend)), name)$</p>
 
-<p>then $f(i)$ will return the names of Alberto Pepe’s friends. By function currying and composition, we can rewrite the above definition.</p>
+<p>then $f(i)$ will return the names of Alberto Pepe&#39;s friends. By function currying and composition, we can rewrite the above definition.</p>
 
-<p>$f(i) = (\epsilon^{name} \cdot v_{in} \cdot e^{friend}<em>{lab+} \cdot e</em>{out})(i)$</p>
+<p>$f(i) = (\epsilon^{name} \cdot v<em>{in} \cdot e^{friend}</em>{lab+} \cdot e_{out})(i)$</p>
 
 <p><img src="/assets/images/GTP5.png" alt="GTP5" title="GTP5" width="60%" /></p>
 
-<h4 id="traversal-pattern-of-recommendation">Traversal Pattern of Recommendation</h4>
+<h4>Traversal Pattern of Recommendation</h4>
+
 <p>Like I mentioned in last post, currently every giant tech company has some sort of graph data. In this stage, every company want to do some sort of recommendation to increase user engagement.So let us focus on traversal pattern of recommendation. Following is how the graph looks like.</p>
 
 <p><img src="/assets/images/GTP6.png" alt="GTP6" title="GTP6" width="90%" /></p>
 
-<p>#####Content-Based Recommendation
-In order to identify resources that are similar in features to a resource, traverse to all resources that share the same features.  Here is the traversal pattern function definition. Let $i$ be the resource</p>
+<h5>Content-Based Recommendation</h5>
 
-<p>$f(i) = (\epsilon^{i}<em>{\epsilon -} \cdot v</em>{out} \cdot e^{feature}<em>{lab+} \cdot e</em>{in} \cdot v_{in} \cdot e^{feature}<em>{lab+} \cdot e</em>{out}) (i)$</p>
+<p>In order to identify resources that are similar in features to a resource, traverse to all resources that share the same features.  Here is the traversal pattern function definition. Let $i$ be the resource</p>
+
+<p>$f(i) = (\epsilon^{i}<em>{\epsilon -} \cdot v</em>{out} \cdot e^{feature}<em>{lab+} \cdot e</em>{in} \cdot v<em>{in} \cdot e^{feature}</em>{lab+} \cdot e_{out}) (i)$</p>
 
 <p>Following figure describe the processing.</p>
 
 <p><img src="/assets/images/GTP7.png" alt="GTP7" title="GTP7" width="90%" /></p>
 
-<p>There is one <em>important</em> extension to this problem : “Given what person $i$ likes, what other resources have similar features?”  We just need to define an additinal function $g$ of person $i$</p>
+<p>There is one <em>important</em> extension to this problem : &quot;Given what person $i$ likes, what other resources have similar features?&quot;  We just need to define an additinal function $g$ of person $i$</p>
 
-<p>$g(i) = (v_{in} \cdot e^{likes}<em>{lab+} \cdot e</em>{out}) (i)$</p>
+<p>$g(i) = (v<em>{in} \cdot e^{likes}</em>{lab+} \cdot e_{out}) (i)$</p>
 
 <p>and then our problem can be solved by $f \dot g$</p>
 
-<h5 id="collaborative-filtering-based-recommendation">Collaborative Filtering-Based Recommendation</h5>
-<p>In the world of recommendation, there is another recommendation called “collaborative filtering based recommendation”. With collaborative filtering, the objective is to identify a set of resources that have a high probability of being liked by a person based upon identifying other people in the system that enjoy similar likes. For exampl, if person $a$ and person $b$ share 90% of their liked resources in common, then the remaining 10% they don’t share in common are candidates for recommendation. Solving the problem of collaborative filtering using graph traversals can be accomplished 2 components.</p>
+<h5>Collaborative Filtering-Based Recommendation</h5>
 
-<p>$f(i) = (\epsilon^{i}<em>{\epsilon -} \cdot v</em>{out} \cdot e^{like}<em>{lab+} \cdot e</em>{in} \cdot v_{in} \cdot e^{like}<em>{lab+} \cdot e</em>{out}) (i)$</p>
+<p>In the world of recommendation, there is another recommendation called &quot;collaborative filtering based recommendation&quot;. With collaborative filtering, the objective is to identify a set of resources that have a high probability of being liked by a person based upon identifying other people in the system that enjoy similar likes. For exampl, if person $a$ and person $b$ share 90% of their liked resources in common, then the remaining 10% they don&#39;t share in common are candidates for recommendation. Solving the problem of collaborative filtering using graph traversals can be accomplished 2 components.</p>
+
+<p>$f(i) = (\epsilon^{i}<em>{\epsilon -} \cdot v</em>{out} \cdot e^{like}<em>{lab+} \cdot e</em>{in} \cdot v<em>{in} \cdot e^{like}</em>{lab+} \cdot e_{out}) (i)$</p>
 
 <p>Function $f$ traverses to all those people vertices that like the same resources as person vertex $i$ and who themselves are not vertex $i$.</p>
 
-<p>$g(j) = (v_{in} \cdot e^{like}<em>{lab+} \cdot e</em>{out}) (j)$</p>
+<p>$g(j) = (v<em>{in} \cdot e^{like}</em>{lab+} \cdot e_{out}) (j)$</p>
 
 <p>Fucntion $g$ traverses to all the resources liked by vertex $j$. In composition, $(g \cdot f)(i)$ determines all those resources that are liked by those people that have similar tastes to vertex $i$. If person $j$ likes 10 resources in common with person $i$, then the resources that person likes will be returned at least 10 times by $g \cdot f$ (perhaps more if a path exists to those resources from another person vertex as well)</p>
 
 <p><img src="/assets/images/GTP8.png" alt="GTP8" title="GTP8" width="90%" /></p>
 
-<p>####Conclusion
-With the graph traversal pattern, there exists a single graph data structure that can be traversed in different ways to expose different types of recommendations|generally, different types of relationships between vertices.Being able to mix and match the types of traversals executed alters the semantics of the final rankings and conveniently allows for hybrid recommendation algorithms to emerge.</p>
+<h4>Conclusion</h4>
+
+<p>With the graph traversal pattern, there exists a single graph data structure that can be traversed in different ways to expose different types of recommendations|generally, different types of relationships between vertices.Being able to mix and match the types of traversals executed alters the semantics of the final rankings and conveniently allows for hybrid recommendation algorithms to emerge.</p>
 
   </div>
 

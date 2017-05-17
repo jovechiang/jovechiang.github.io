@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>LLVM note I</title>
-  <meta name="description" content="####Cross Platform LLVM uses clang as front end to translate c/c++/java/fortran to bitcode representation and then LLVM compiler will convert this to differe...">
+  <meta name="description" content="Cross Platform LLVM uses clang as front end to translate c/c++/java/fortran to bitcode representation and then LLVM compiler will convert this to different p...">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="http://localhost:4000/compiler/2013/10/29/LLVM.html">
@@ -77,16 +77,17 @@
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>####Cross Platform
-<img src="/assets/images/LLVM1.png" alt="LLVM" title="LLVM" width="90%" /></p>
+    <h4>Cross Platform</h4>
 
-<p>LLVM uses clang as front end to translate c/c++/java/fortran to bitcode representation and then LLVM compiler will convert this to different platform’s assembly.</p>
+<p><img src="/assets/images/LLVM1.png" alt="LLVM" title="LLVM" width="90%" /></p>
+
+<p>LLVM uses clang as front end to translate c/c++/java/fortran to bitcode representation and then LLVM compiler will convert this to different platform&#39;s assembly.</p>
 
 <p>Clang is not only the front end of LLVM for c/c++/objective c  compiling, but also a <em>static analyzer</em> to help the development of software. Well, in the industry, there are couple static analyzer like <em>Coverity</em> , <em>Klocwork</em>. They can analysis the source code at development stage statically. That can save a lot effort in debugging in the runtime.</p>
 
-<p>####SSA( static single assignment )
-LLVM IR(<em>intermediary representation</em>) is in the form of SSA. SSA should be the most influencial project because this is the base of the design of LLVM Assembly. SSA was originally be introduced in 1988 by Wegman, Zadeck , Alpern. Right now, it is in the production status with GCC 4.0 or Java JIT compiler. The basic idea of SSA is to limit the variable assignment counts to only 1. If a variable is changed 5 times in the computing, it will generate 5 copies of this variable.</p>
+<h4>SSA( static single assignment )</h4>
 
+<p>LLVM IR(<em>intermediary representation</em>) is in the form of SSA. SSA should be the most influencial project because this is the base of the design of LLVM Assembly. SSA was originally be introduced in 1988 by Wegman, Zadeck , Alpern. Right now, it is in the production status with GCC 4.0 or Java JIT compiler. The basic idea of SSA is to limit the variable assignment counts to only 1. If a variable is changed 5 times in the computing, it will generate 5 copies of this variable.</p>
 
   </div>
 

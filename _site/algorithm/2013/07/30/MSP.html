@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Minimal Superpermutation Problem</title>
-  <meta name="description" content="####Question Description We have $1,2,\ldots,n$ symbols. We want to find a shoretest possible string on the symbols that contains every permutation of those ...">
+  <meta name="description" content="Question Description We have $1,2,\ldots,n$ symbols. We want to find a shoretest possible string on the symbols that contains every permutation of those symb...">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="http://localhost:4000/algorithm/2013/07/30/MSP.html">
@@ -77,28 +77,31 @@
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>####Question Description
-We have $1,2,\ldots,n$ symbols. We want to find a shoretest possible string on the symbols that contains every permutation of those symbols as a contiguous substring. We call a string that contains every permutation in this way a $superpermutation$, and one of minimal length is called a $minimal$ $superpermutation$.</p>
+    <h4>Question Description</h4>
+
+<p>We have $1,2,\ldots,n$ symbols. We want to find a shoretest possible string on the symbols that contains every permutation of those symbols as a contiguous substring. We call a string that contains every permutation in this way a $superpermutation$, and one of minimal length is called a $minimal$ $superpermutation$.</p>
 
 <p>For example, when $n=3$, all permutations are : $123$,$132$,$312$,$213$,$231$,$321$. In this case, the minimal superpermutation is $123121321$. The minimal length is 9.</p>
 
-<p>####Minimal Length
-An apparent lower bound of the length of superpermutation on $n$ symbols is $n ! +n-1$, because it must contain every permutation of the $n!$ permutations as a substring - the first permutation has $n$ characters to the string, and each of the remaining $n ! - 1$ permutations have a lengh of at least 1 character more.  A trivial upper bound on the length of a minimal superpermutation is $ n* n !$</p>
+<h4>Minimal Length</h4>
 
-<p>Suppose we already have a small superpermutation on $n$ and we want to construct a small superpermutation on $n+1$ symbols. To do so, simply replace each permutaiton in the $n$ symbol superpermutation by (1) the permutaiton, (2)the symbol $n+1$ (3) that permutaiton again.</p>
+<p>An apparent lower bound of the length of superpermutation on $n$ symbols is $n ! +n-1$, because it must contain every permutation of the $n!$ permutations as a substring - the first permutation has $n$ characters to the string, and each of the remaining $n ! - 1$ permutations have a lengh of at least 1 character more.  A trivial upper bound on the length of a minimal superpermutation is $ n* n !$       </p>
+
+<p>Suppose we already have a small superpermutation on $n$ and we want to construct a small superpermutation on $n+1$ symbols. To do so, simply replace each permutaiton in the $n$ symbol superpermutation by (1) the permutaiton, (2)the symbol $n+1$ (3) that permutaiton again. </p>
 
 <p>You can find detail here: <a href="http://www.notatt.com/permutations.pdf">link</a></p>
 
-<p>####Uniqueness
-It turns out that there are in fact many superpermutations of the conjectured minimal lengh. The result of [1] shows that there are at least</p>
+<h4>Uniqueness</h4>
+
+<p>It turns out that there are in fact many superpermutations of the conjectured minimal lengh. The result of [1] shows that there are at least</p>
 
 <p>$\prod_{k=1}^{n-4} (n-k-2)^{k\cdot k!}$</p>
 
-<p>####Reference</p>
-<ol>
-  <li><a href="http://www.sciencedirect.com/science/article/pii/S0012365X1300157X">Non-uniqueness of minimal superpermutation</a></li>
-</ol>
+<h4>Reference</h4>
 
+<ol>
+<li><a href="http://www.sciencedirect.com/science/article/pii/S0012365X1300157X">Non-uniqueness of minimal superpermutation</a> </li>
+</ol>
 
   </div>
 

@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>The Probabilistic Relevance Framework</title>
-  <meta name="description" content="####Introduction The Probabilistic Relevance Framework (PRF) is a formal framework for document retrieval, grouned in work done in the 1970-1980s, which led ...">
+  <meta name="description" content="Introduction The Probabilistic Relevance Framework (PRF) is a formal framework for document retrieval, grouned in work done in the 1970-1980s, which led to t...">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="http://localhost:4000/information_retrieval/system/algorithm/2013/07/09/PF.html">
@@ -77,233 +77,141 @@
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>####Introduction
-The Probabilistic Relevance Framework (PRF) is a formal framework for document retrieval, grouned in work done in the 1970-1980s, which led to the development of one of the most successful text-retrieval algorithms, <em>BM25</em>. In recent years, research in the PRF has yielded new retrieval models capable of taking into account document meta-data (especially structure and link-graph information). This led to one of the most successful Web-search and cororate-search algorithms, <em>BM25F</em>.</p>
+    <h4>Introduction</h4>
 
-<p>####Basic Model</p>
-<h5 id="some-notation">Some notation</h5>
-<p>rank equivalence : $\propto_{q}$ eg. $g() \propto_{q} h()$    <br />
-relevance $Rel$: $rel,\bar{rel}$  (relevant or not)    <br />
-document:   $d = (tf_{1},\ldots, tf_{|V|})$,  where $tf_i$ normally represents the frequency of term $t_i$   <br />
-query:  $q = (qtf_{1},\ldots,qtf_{|V|})$, where $qtf_i$ represents term frequencies in the query or may represent a binary presence or absence feature.</p>
+<p>The Probabilistic Relevance Framework (PRF) is a formal framework for document retrieval, grouned in work done in the 1970-1980s, which led to the development of one of the most successful text-retrieval algorithms, <em>BM25</em>. In recent years, research in the PRF has yielded new retrieval models capable of taking into account document meta-data (especially structure and link-graph information). This led to one of the most successful Web-search and cororate-search algorithms, <em>BM25F</em>.</p>
 
-<p>#####Development of Basic Model
-We start with the very general PRF, and end up with an explicit document scoring function.
-$P(rel|d,q) \propto_{q}\frac{P(rel|d,q)}{P(\bar{rel}|d,q)} = \frac{P(d|rel,q) P(rel|q)}{P(d|\bar{rel},q)P(\bar{rel}|q)}$    <br />
-$\propto_{q} \frac{P(d|rel,q)}{P(d|\bar{rel},q)} $</p>
+<h4>Basic Model</h4>
 
-<table>
-  <tbody>
-    <tr>
-      <td>$\approx \prod_{i \in V} \frac{P(TF_i = tf_i</td>
-      <td>rel, q)}{P(TF_i = tf_i</td>
-      <td>\bar{rel}, q)}$</td>
-    </tr>
-  </tbody>
-</table>
+<h5>Some notation</h5>
 
-<table>
-  <tbody>
-    <tr>
-      <td>$\approx \prod_{i \in q} \frac{P(TF_i = tf_i</td>
-      <td>rel)}{P(TF_i = tf_i</td>
-      <td>\bar{rel})}$</td>
-    </tr>
-  </tbody>
-</table>
+<p>rank equivalence : $\propto<em>{q}$ eg. $g() \propto</em>{q} h()$<br>
+relevance $Rel$: $rel,\bar{rel}$  (relevant or not)<br>
+document:   $d = (tf<em>{1},\ldots, tf</em>{|V|})$,  where $tf<em>i$ normally represents the frequency of term $t</em>i$<br>
+query:  $q = (qtf<em>{1},\ldots,qtf</em>{|V|})$, where $qtf_i$ represents term frequencies in the query or may represent a binary presence or absence feature.      </p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>$\propto_{q}  \sum_q \log \frac{P(TF_i = tf_i</td>
-      <td>rel)}{P(TF_i = tf_i</td>
-      <td>\bar{rel})}$</td>
-    </tr>
-  </tbody>
-</table>
+<h5>Development of Basic Model</h5>
 
-<table>
-  <tbody>
-    <tr>
-      <td>Let $U_i(x) = \log \frac{P(TF_i =x</td>
-      <td>rel)}{P(TF_i =x</td>
-      <td>\bar{rel})}$, then we have</td>
-    </tr>
-  </tbody>
-</table>
+<p>We start with the very general PRF, and end up with an explicit document scoring function.
+$P(rel|d,q) \propto<em>{q}\frac{P(rel|d,q)}{P(\bar{rel}|d,q)} = \frac{P(d|rel,q) P(rel|q)}{P(d|\bar{rel},q)P(\bar{rel}|q)}$<br>
+$\propto</em>{q} \frac{P(d|rel,q)}{P(d|\bar{rel},q)} $       </p>
 
-<p>$=\sum_q U_i (tf_i)$</p>
+<p>$\approx \prod<em>{i \in V} \frac{P(TF</em>i = tf<em>i | rel, q)}{P(TF</em>i = tf_i| \bar{rel}, q)}$        </p>
 
-<p>$= \sum_{q,tf_i&gt;0} U_i(tf_i) + \sum_{q, tf_i=0} U_i(0) - \sum_{q, tf_i&gt;0}U_i(0) + \sum_{q, tf_i&gt;0} U_i(0)$</p>
+<p>$\approx \prod<em>{i \in q} \frac{P(TF</em>i = tf<em>i | rel)}{P(TF</em>i = tf_i| \bar{rel})}$        </p>
 
-<p>$= \sum_{q,tf_i&gt;0} (U_i(tf_i) - U_i(0)) + \sum_q U_i(0)$</p>
+<p>$\propto<em>{q}  \sum</em>q \log \frac{P(TF<em>i = tf</em>i | rel)}{P(TF<em>i = tf</em>i|\bar{rel})}$</p>
 
-<p>$\propto_{q} \sum_{q,tf_i&gt;0} (U_i(tf_i) - U_i(0))$</p>
+<p>Let $U<em>i(x) = \log \frac{P(TF</em>i =x|rel)}{P(TF_i =x|\bar{rel})}$, then we have</p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>let $W_i(x) = U_i(x) - U_i(0) = \log \frac{P(TF_i = x</td>
-      <td>rel) P(TF_i =0</td>
-      <td>\bar{rel})}{P(TF_i=x</td>
-      <td>\bar{rel})P(TF_i=0</td>
-      <td>rel)}$</td>
-    </tr>
-  </tbody>
-</table>
+<p>$=\sum<em>q U</em>i (tf_i)$</p>
 
-<p>and $w_i = W_i(tf_i)$, we finally have:</p>
+<p>$= \sum<em>{q,tf</em>i&gt;0} U<em>i(tf</em>i) + \sum<em>{q, tf</em>i=0} U<em>i(0) - \sum</em>{q, tf<em>i&gt;0}U</em>i(0) + \sum<em>{q, tf</em>i&gt;0} U_i(0)$</p>
 
-<p>$\sum_{q,tf_i&gt;0} w_i$</p>
+<p>$= \sum<em>{q,tf</em>i&gt;0} (U<em>i(tf</em>i) - U<em>i(0)) + \sum</em>q U_i(0)$</p>
 
-<p>####Derived Models
-#####The binary independent model
-Suppose that $TF_i$ is a binary variable, having only the values zero and one. Now we got new $w_i$:</p>
+<p>$\propto<em>{q} \sum</em>{q,tf<em>i&gt;0} (U</em>i(tf<em>i) - U</em>i(0))$ </p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>$w_i^{BIM} = \log \frac{P(t_i</td>
-      <td>rel)(1- P(t_i</td>
-      <td>\bar{rel}))}{1-P(t_i</td>
-      <td>rel)P(t_i</td>
-      <td>\bar{rel})}$</td>
-    </tr>
-  </tbody>
-</table>
+<p>let $W<em>i(x) = U</em>i(x) - U<em>i(0) = \log \frac{P(TF</em>i = x | rel) P(TF<em>i =0| \bar{rel})}{P(TF</em>i=x|\bar{rel})P(TF_i=0|rel)}$         </p>
 
-<p>Let’s get into detail about deriving a “relevance” property since above equation is conditional on the relevance property.</p>
+<p>and $w<em>i = W</em>i(tf_i)$, we finally have:       </p>
+
+<p>$\sum<em>{q,tf</em>i&gt;0} w_i$       </p>
+
+<h4>Derived Models</h4>
+
+<h5>The binary independent model</h5>
+
+<p>Suppose that $TF<em>i$ is a binary variable, having only the values zero and one. Now we got new $w</em>i$:</p>
+
+<p>$w<em>i^{BIM} = \log \frac{P(t</em>i|rel)(1- P(t<em>i|\bar{rel}))}{1-P(t</em>i|rel)P(t_i|\bar{rel})}$</p>
+
+<p>Let&#39;s get into detail about deriving a &quot;relevance&quot; property since above equation is conditional on the relevance property.</p>
 
 <p>Notation
-$N$   size of the judged sample     <br />
-$n_i$ Number of documents in the judged sample containing term $t_i$     <br />
-$R$   Relevant set size( number of documents judged relevant )     <br />
-$r_i$  Number of judged relevant docs containing term $t_i$</p>
+$N$   size of the judged sample<br>
+$n<em>i$ Number of documents in the judged sample containing term $t</em>i$<br>
+$R$   Relevant set size( number of documents judged relevant )<br>
+$r<em>i$  Number of judged relevant docs containing term $t</em>i$       </p>
 
-<p>#####Robertson Sprck Jones weight</p>
+<h5>Robertson Sprck Jones weight</h5>
 
-<p>$w_i^{RSJ} = \log \frac{(r_i+0.5)(N-R -n_i + r_i +0.5)}{(n_i-r_i+0.5)(R-r_i+0.5)}$</p>
+<p>$w<em>i^{RSJ} = \log \frac{(r</em>i+0.5)(N-R -n<em>i + r</em>i +0.5)}{(n<em>i-r</em>i+0.5)(R-r_i+0.5)}$</p>
 
-<p>Next, we suppose that some documents, probably a small number, have been retrieved and judged—this is the usual <em>relevance feedback scenario.</em></p>
+<p>Next, we suppose that some documents, probably a small number, have been retrieved and judged---this is the usual <em>relevance feedback scenario.</em>       </p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>And, we suppose that we have no relevance information at all(the most usual scenario). In this case, we can only assume that the relevance probability $P(t_i</td>
-      <td>rel)$ is fixed, but we can continue to use the complement method for the non-relevance probability. All this can be achieved by setting $R=r_i=0$ in the RSJ formula. This resulting fomula is a close approximation to classical $IDF$</td>
-    </tr>
-  </tbody>
-</table>
+<p>And, we suppose that we have no relevance information at all(the most usual scenario). In this case, we can only assume that the relevance probability $P(t<em>i|rel)$ is fixed, but we can continue to use the complement method for the non-relevance probability. All this can be achieved by setting $R=r</em>i=0$ in the RSJ formula. This resulting fomula is a close approximation to classical $IDF$</p>
 
-<p>$w_i^{IDF} = \log \frac{N-n_i+0.5}{n_i+0.5}$</p>
+<p>$w<em>i^{IDF} = \log \frac{N-n</em>i+0.5}{n_i+0.5}$</p>
 
-<p>####The Eliteness Model
-We suppose that for any document-term pair there is a hidden property which we refer to as $eliteness$ This can be interpreted as a form of aboutness: if the term is elite in the document, in some sense the document is about the concept denoted by the term.</p>
+<h4>The Eliteness Model</h4>
 
-<p>#####2-Poisson Model
-New notation:  The eliteness random variable $E$ can take two values:</p>
+<p>We suppose that for any document-term pair there is a hidden property which we refer to as $eliteness$ This can be interpreted as a form of aboutness: if the term is elite in the document, in some sense the document is about the concept denoted by the term.</p>
+
+<h5>2-Poisson Model</h5>
+
+<p>New notation:  The eliteness random variable $E$ can take two values:</p>
 
 <p>$E$ : $elite$, $\bar{elite}$</p>
 
 <p>We now decompose all the probabilities we want using these tow disjoint events, following this pattern:</p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>$P(\alpha</td>
-      <td>\beta) = P(\alpha</td>
-      <td>elite)P(elite</td>
-      <td>\beta) + P(\alpha</td>
-      <td>\bar{elite})P(\bar{elite}</td>
-      <td>\beta)$.</td>
-    </tr>
-  </tbody>
-</table>
+<p>$P(\alpha|\beta) = P(\alpha |elite)P(elite|\beta) + P(\alpha | \bar{elite})P(\bar{elite} | \beta)$.</p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>Let $p_{i1} = P(E_i = elite</td>
-      <td>rel)$ and $p_{i0} = P(E_i = elite</td>
-      <td>\bar{rel})$</td>
-    </tr>
-  </tbody>
-</table>
+<p>Let $p<em>{i1} = P(E</em>i = elite|rel)$ and $p<em>{i0} = P(E</em>i = elite|\bar{rel})$   </p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>$E_{i1}(tf) = P(TF_i=TF</td>
-      <td>E_i = elite)$ and $E_{i0}(tf) = P(TF_i=TF</td>
-      <td>E_i = \bar{elite})$</td>
-    </tr>
-  </tbody>
-</table>
+<p>$E<em>{i1}(tf) = P(TF</em>i=TF | E<em>i = elite)$ and $E</em>{i0}(tf) = P(TF<em>i=TF | E</em>i = \bar{elite})$ </p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>We can get this : $P(TF_i = tf</td>
-      <td>rel) = p_{i1} E_{i1}(tf) + (1 - p_{i1} E_{i0}(tf))$</td>
-    </tr>
-  </tbody>
-</table>
+<p>We can get this : $P(TF<em>i = tf |rel) = p</em>{i1} E<em>{i1}(tf) + (1 - p</em>{i1} E_{i0}(tf))$</p>
 
 <p>This gives us an equation for our term-weights:</p>
 
-<p>$w_{i}^{elite} = \log \frac{(p_1E_1(tf) + (1-p_1)E_0(tf))(p_0E_1(0)+(1-p_0)E_0(0))}{(p_1E_1(0)+(1-p_1)E_0(0))(p_0E_1(tf)+(1-p_0)E_0(tf))}$</p>
+<p>$w<em>{i}^{elite} = \log \frac{(p</em>1E<em>1(tf) + (1-p</em>1)E<em>0(tf))(p</em>0E<em>1(0)+(1-p</em>0)E<em>0(0))}{(p</em>1E<em>1(0)+(1-p</em>1)E<em>0(0))(p</em>0E<em>1(tf)+(1-p</em>0)E_0(tf))}$</p>
 
 <p>More specifically, we make distributional assumptions about these events. From $Harter$, we assume that the distributions of term frequencies across documents, conditioned on eliteness, are Poisson:</p>
 
-<p>$E_{ie}(tf) \sim Poisson(\lambda_{ie})$ (Poisson with mean $\lambda_{ie}$)</p>
+<p>$E<em>{ie}(tf) \sim Poisson(\lambda</em>{ie})$ (Poisson with mean $\lambda_{ie}$)</p>
 
 <p>We note the following characterisitics of this model:</p>
 
 <ol>
-  <li>
-    <p>The model of topicality is a very simple one – one word one topic.</p>
-  </li>
-  <li>
-    <p>There is no attempt to normalise the probabilities across the full unigram model for the document.</p>
-  </li>
-  <li>
-    <p>The model depends fairly crucially on the notion that all documents are of the same(fixed) length</p>
-  </li>
+<li><p>The model of topicality is a very simple one -- one word one topic.</p></li>
+<li><p>There is no attempt to normalise the probabilities across the full unigram model for the document.</p></li>
+<li><p>The model depends fairly crucially on the notion that all documents are of the same(fixed) length</p></li>
 </ol>
 
 <p>If we plug the Poisson distributional assumptions into above equation, we can express the term weight as a function of the two means $\lambda_{e}$ and the mixing proportion of elite and non-elite documents in the collection(as well as the observed tf). This is a somewhat messy formula.</p>
 
-<p>We note:</p>
-<ol>
-  <li>$w_{i}^{elite}(0) = 0$</li>
-  <li>$w_{i}^{elite}(tf)$ increases monotonically with $tf$;</li>
-  <li>However, asymptotically approaches a maximum value as $tf \rightarrow \infty$</li>
-  <li>and the asymptotic limit being:</li>
-</ol>
+<p>We note:
+1. $w<em>{i}^{elite}(0) = 0$ 
+2. $w</em>{i}^{elite}(tf)$ increases monotonically with $tf$;
+3. However, asymptotically approaches a maximum value as $tf \rightarrow \infty$ 
+4. and the asymptotic limit being:</p>
 
-<p>$\lim_{tf\rightarrow\infty} w_i^{elite}(tf) = \log \frac{p_1(1-p_0)}{(1-p_1)p_0} = w_i^{BIM}$</p>
+<p>$\lim<em>{tf\rightarrow\infty} w</em>i^{elite}(tf) = \log \frac{p<em>1(1-p</em>0)}{(1-p<em>1)p</em>0} = w_i^{BIM}$</p>
 
-<p>####BM25
-Notation: 
-soft length normlisation:  $B = ((1-b) + b\frac{dl}{avdl})$ ,</p>
+<h4>BM25</h4>
 
-<p>where $dl = \sum_{i\in V} tf_i$ it’s document length,</p>
+<p>Notation: 
+soft length normlisation:  $B = ((1-b) + b\frac{dl}{avdl})$ ,          </p>
+
+<p>where $dl = \sum<em>{i\in V} tf</em>i$ it&#39;s document length,</p>
 
 <p>$avdl$ is the average document length. $b$ is normlisation parameter and setting $b=1$will perform full document-length normalisation</p>
 
-<p>$tf’ = \frac{tf}{B}$</p>
+<p>$tf&#39; = \frac{tf}{B}$</p>
 
-<p>$w_{i}^{BM25}(tf) = \frac{tf’}{k_1+tf’} w_i^{RSJ}$</p>
+<p>$w<em>{i}^{BM25}(tf) = \frac{tf&#39;}{k</em>1+tf&#39;} w_i^{RSJ}$</p>
 
-<p>$=\frac{tf}{k_1((1-b) + b\frac{dl}{avdl})+tf} w_i^{RSJ}$</p>
+<p>$=\frac{tf}{k<em>1((1-b) + b\frac{dl}{avdl})+tf} w</em>i^{RSJ}$</p>
 
-<p>where $k_1$ is a $saturation$ parameter. For high $k_1$, increments in $tf$ continue to contribute significantly to the score, whereas for low $k_1$, the additional contribution of a newly observed occourrence tails off ver rapidly.</p>
+<p>where $k<em>1$ is a $saturation$ parameter. For high $k</em>1$, increments in $tf$ continue to contribute significantly to the score, whereas for low $k_1$, the additional contribution of a newly observed occourrence tails off ver rapidly.</p>
 
-<p>####Reference
-“The Probabilistic Relevance Framework BM25 and Beyond” by Stephen Robertson and Hugo Zaragoza</p>
+<h4>Reference</h4>
 
-<p>“A probabilistic approach to automatic keyword indexing” S.P.Harter</p>
+<p>&quot;The Probabilistic Relevance Framework BM25 and Beyond&quot; by Stephen Robertson and Hugo Zaragoza</p>
 
+<p>&quot;A probabilistic approach to automatic keyword indexing&quot; S.P.Harter</p>
 
   </div>
 

@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Content-Based Recommender Systems II Item Representation</title>
-  <meta name="description" content="####Basics Item that can be recommended to the user are represented by a set of features, also called attributes or properties. When each item is described b...">
+  <meta name="description" content="Basics Item that can be recommended to the user are represented by a set of features, also called attributes or properties. When each item is described by th...">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="http://localhost:4000/recommender_system/2013/06/30/RS2.html">
@@ -77,37 +77,39 @@
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>####Basics
-Item that can be recommended to the user are represented by a set of features, also called <em>attributes</em> or <em>properties</em>. When each item is described by the same set of attributes, and there is a known set of values the attributes may take, the item is represent by means of structured data. In this case, many ML algorithms can be used to learn a user profile.</p>
+    <h4>Basics</h4>
+
+<p>Item that can be recommended to the user are represented by a set of features, also called <em>attributes</em> or <em>properties</em>. When each item is described by the same set of attributes, and there is a known set of values the attributes may take, the item is represent by means of structured data. In this case, many ML algorithms can be used to learn a user profile.</p>
 
 <p>In most content-based filtering systems, item descriptions are textual features extracted from Web pages, emails news articles or product descriptions. Unlike structured data, there are no attributes with well-defined values. Textual features create a number of complications when learning a user profile, due to natural language ambiguity.</p>
 
-<p>Semantic analysis and its integration in personalization models is one of the most innovative and interesting approaches proposed in literature to solve those problems. The key idea is the adoption of knowledge bases, such as lexicons or ontologies, for annotating items and repsenting profiles in order to obtain a “semantic” interpretation of the user information needs.</p>
+<p>Semantic analysis and its integration in personalization models is one of the most innovative and interesting approaches proposed in literature to solve those problems. The key idea is the adoption of knowledge bases, such as lexicons or ontologies, for annotating items and repsenting profiles in order to obtain a &quot;semantic&quot; interpretation of the user information needs.</p>
 
-<p>####Keyword-based Vector Space Model
-Vector Space Model (VSM) is a spatial representation of text documents. In that model, each document is represented by a vector in a <em>n</em>-dimensional space, where each dimension corresponds to a term from the overall vocabulary of a given document collection.</p>
+<h4>Keyword-based Vector Space Model</h4>
 
-<p>Formally, every document is represented as a vector of term weights, where each weight indicates the degree of association between the document and the item. Let $D = {d_1,d_2,\ldots, d_N }$ denote a set of documents or corpus, and $T = {t_1, t_2,\ldots, t_n}$ be the dictionary, that is to say the set of words in the corpus. <em>T</em> is obtained by applying some standard natural language processing operations, such as tokenization, stopwords removal, and stemming. Each document $d_j$ is represented as a vector in a <em>n</em> dimensional vecto space, so $d_j = {w_{1j}, w_{2j},\ldots, w_{nj}}$, where $w_{kj}$ is the weight for term $t_k$ in document $d_j$</p>
+<p>Vector Space Model (VSM) is a spatial representation of text documents. In that model, each document is represented by a vector in a <em>n</em>-dimensional space, where each dimension corresponds to a term from the overall vocabulary of a given document collection.</p>
+
+<p>Formally, every document is represented as a vector of term weights, where each weight indicates the degree of association between the document and the item. Let $D = {d<em>1,d</em>2,\ldots, d<em>N }$ denote a set of documents or corpus, and $T = {t</em>1, t<em>2,\ldots, t</em>n}$ be the dictionary, that is to say the set of words in the corpus. <em>T</em> is obtained by applying some standard natural language processing operations, such as tokenization, stopwords removal, and stemming. Each document $d<em>j$ is represented as a vector in a <em>n</em> dimensional vecto space, so $d</em>j = {w<em>{1j}, w</em>{2j},\ldots, w<em>{nj}}$, where $w</em>{kj}$ is the weight for term $t<em>k$ in document $d</em>j$</p>
 
 <p>There is two issues in this approach: weighting the terms and measuring the feature vector similarity. The most commonly used term weighting scheme.</p>
 
-<p>#####Term Frequency Inverse Document Frequency (TF-IDF) weighting
-In short: therms that occur frequently in one document(TF=term frequency), but rarely in the rest of the corpus(IDF = inverse document frequency), are more likely to be relevant to the topic of the document.</p>
+<h5>Term Frequency Inverse Document Frequency (TF-IDF) weighting</h5>
 
-<p>$TF-IDF(t_k, d_j) = TF(t_k,d_j) \log\frac{N}{n_k}$</p>
+<p>In short: therms that occur frequently in one document(TF=term frequency), but rarely in the rest of the corpus(IDF = inverse document frequency), are more likely to be relevant to the topic of the document.     </p>
 
-<p>where $N$ denotes the number of documents in the corpus, and $n_k$ denotes the number of documents in the collection in which the term $t_k$ occurs at least once.</p>
+<p>$TF-IDF(t<em>k, d</em>j) = TF(t<em>k,d</em>j) \log\frac{N}{n_k}$   </p>
 
-<p>$TF(t_k, d_j) = \frac{f_{k,j}}{\max_{z}f_{z,j}}$</p>
+<p>where $N$ denotes the number of documents in the corpus, and $n<em>k$ denotes the number of documents in the collection in which the term $t</em>k$ occurs at least once.    </p>
 
-<p>where the maximum is computed over the frequencies $f_{z,j}$ of all terms $t_z$ that occur in document $d_j$. In order for the weights to fail in the [0,1] interval and for the documents to be represented by vector of equal length, here is the normalization:</p>
+<p>$TF(t<em>k, d</em>j) = \frac{f<em>{k,j}}{\max</em>{z}f_{z,j}}$  </p>
 
-<p>$w_{k,j} = \frac{TF-IDF(t_k,d_j)}{\sqrt{\sum_{s=1}^{T}TF-IDF(t_s,d_j)^2}}$</p>
+<p>where the maximum is computed over the frequencies $f<em>{z,j}$ of all terms $t</em>z$ that occur in document $d_j$. In order for the weights to fail in the [0,1] interval and for the documents to be represented by vector of equal length, here is the normalization:</p>
+
+<p>$w<em>{k,j} = \frac{TF-IDF(t</em>k,d<em>j)}{\sqrt{\sum</em>{s=1}^{T}TF-IDF(t<em>s,d</em>j)^2}}$  </p>
 
 <p>Therefore, the similarity is defined as following:</p>
 
-<p>$sim(d_i,d_j) = \frac{\sum_{k}w_{ki}w_{kj}}{\sqrt{\sum_{k}w_{ki}^2}\sqrt{\sum_{k}w_{kj}^2}}$</p>
-
+<p>$sim(d<em>i,d</em>j) = \frac{\sum<em>{k}w</em>{ki}w<em>{kj}}{\sqrt{\sum</em>{k}w<em>{ki}^2}\sqrt{\sum</em>{k}w_{kj}^2}}$</p>
 
   </div>
 
